@@ -1,33 +1,43 @@
 """
-    #############################
-    ## 3D CFD GLOF simulations ##
-    #############################
+    #########################################
+    ## 3D CFD Simulation of GLOFs with OpenFOAM ##
+    #########################################
 
-    This is the main code file of the third work package of the project
-    'Future glacial lakes in High Mountain Asia - Modeling and Risk Analysis' (GLAMoR).
-    It was used for the main analyses of the Natural Hazards and Earth System Sciences publication by Furian et al. (2025).
-    The script was written by W. Furian.
+    This script is part of Work Package 3 of the project 
+    'Future Glacial Lakes in High Mountain Asia – Modeling and Risk Analysis' (GLAMoR).
+    It was developed for the main analyses presented in the publication:
+    Furian et al. (2025), *Natural Hazards and Earth System Sciences*.
 
-    With this script, it is possible to use the three-dimensional CFD software OpenFOAM to simulate GLOF events in high-mountain areas.
+    Author: W. Furian
 
-    In order to run properly, this script requires different datasets to be downloaded:
-    - a DEM with a sufficiently high resolution
-    - information on the spatial extent of the glacial lakes that the GLOFs will originate from
+    This script enables the simulation of glacial lake outburst floods (GLOFs) 
+    in high-mountain regions using the three-dimensional CFD software OpenFOAM.
 
-    This workflow has been tested using:
-    - OpenFOAM version 2112 for simulations,
-    - ParaView version 5.11.0 for visualization and analysis,
-    - Python 3.8 for pre- and postprocessing routines,
-    - C++ as required for the OpenFOAM solvers.
+    ----------------------------
+    Required input data:
+    - A high-resolution digital elevation model (DEM)
+    - Spatial data delineating the extent of glacial lakes serving as GLOF sources
 
-    This code is available on github at https://github.com/cryotools/GLOF-simulations
-    For more information on this work package see the README.
-    For more information on the project as a whole see https://hu-berlin.de/glamor.
+    ----------------------------
+    Tested software environment:
+    - OpenFOAM version 2112 (for hydrodynamic simulation)
+    - ParaView version 5.11.0 (for visualization and analysis)
+    - Python 3.8 (for pre- and postprocessing routines)
+    - C++ (as required by OpenFOAM solvers)
 
-    You are allowed to use and modify this code in a noncommercial manner and by
-    appropriately citing the above mentioned developer. If you would like to share your own improvements,
-    please fork the repository on GitHub, commit your changes, and file a merge request.
+    ----------------------------
+    Repository:
+    https://github.com/cryotools/GLOF-simulations
 
-    Correspondence: wilhelm.furian.1@geo.hu-berlin.de
+    Project information:
+    https://hu-berlin.de/glamor
+
+    ----------------------------
+    License and usage:
+    This script is provided for non-commercial use. Users are free to modify and adapt it, 
+    provided appropriate credit is given to the original author. 
+    Contributions are welcome—please fork the repository, commit your changes, 
+    and submit a pull request.
+
+    Contact: W. Furian (ORDID:0000-0001-7834-2500)
 """
-# imports
