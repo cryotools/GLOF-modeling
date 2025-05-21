@@ -37,6 +37,8 @@ For **future glacial lakes**, the lake bed topography can be approximated by sub
 For **existing lakes**, the lake bottom must be estimated—commonly using empirical relationships between lake area and volume, 
 as outlined, for example, in [Cook and Quincey (2015)](https://doi.org/10.5194/esurfd-3-909-2015).
 
+Finally, a raster file (`lake.tif`) needs to be created from the lake basin morphology. 
+
 ---
 
 ## Part 2 – Moraine Breach Definition
@@ -75,11 +77,35 @@ with the following adjustments in the Environment settings:
 
 ---
 
-## Part 4 - Creating the STL files
+## Part 4 – STL File Generation
 
-Using the following terminal command (calling a script called `stlWriter.py`), 
-the STL files are created from the DEM:  
-``
-  python3 stlWriter.py -d land.tif -s valley.tif
-``  
-asdf
+STL files representing the valley and lake surfaces are generated using the Python scripts provided in the `code` folder.  
+These scripts require slight adjustment depending on the actual file paths and data used for your specific site.
+
+In particular:
+
+- For the **valley STL**, the script requires a single raster file (e.g., `valley.tif`) as input.
+- For the **lake STL**, the surface elevation of the water body must also be provided.  
+  This can be passed either via the command line or by placing a plain text file containing the elevation value (in meters) in the working directory. The file should be named `elevation`.
+
+Example commands:
+
+```bash
+# Generate STL for the valley:
+python3 stlWriter_valley.py valley.tif
+
+# Generate STL for the lake:
+python3 stlWriter_lake.py lake.tif
+```
+The resulting STL files represent only the surface geometry. In order to be used for mesh generation in OpenFOAM,
+these surfaces must be extruded into 3D volumes:
+
+The valley surface can be extruded using `code/stlExtrude_valley.py`, 
+which produces a box-shaped mesh with vertical sidewalls that follow the valley's outline.
+
+The lake surface is processed using `code/stlExtrude_lake.py`. 
+This script uses the specified lake surface elevation to fill the lake basin and 
+generate a volumetric representation of the lake.
+
+These extruded STL volumes will later be imported into OpenFOAM during the mesh generation process, 
+ensuring that both the valley topography and the lake body are correctly integrated into the simulation domain.
