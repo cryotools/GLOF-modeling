@@ -37,14 +37,11 @@ def extrude_stl(input_file, output_folder, elevation):
 
 def rename_solid_in_stl(stl_file, solid_name):
     
-    # Lesen Sie den Inhalt der STL-Datei
     with open(stl_file, 'r') as file:
         content = file.read()
 
-    # Ersetzen Sie den solid-Namen
     new_content = content.replace('Visualization Toolkit generated SLA File', solid_name)
 
-    # Schreiben Sie den modifizierten Inhalt zurück in die Datei
     with open(stl_file, 'w') as file:
         file.write(new_content)
 

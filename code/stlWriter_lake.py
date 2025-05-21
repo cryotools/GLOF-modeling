@@ -20,35 +20,6 @@ endloop
 endfacet
 """
 
-
-# # Funktion zum Ausführen der Skripte
-# def execute_scripts(folder):
-#     scripts = ['stlWriter_lake.py', 'stlWriter_valley.py', 'stlExtrude_valley.py', 'stlExtrude_lake.py']
-#     for script in scripts:
-#         script_path = os.path.join(folder, script)
-#         if os.path.exists(script_path):
-#             print(f"Ausführen von {script} im Ordner {folder}")
-#             try:
-#                 with open(script_path, 'r') as f:
-#                     script_code = f.read()
-#                 exec(script_code)
-#             except Exception as e:
-#                 print(f"Fehler beim Ausführen von {script}: {e}")
-#         else:
-#             print(f"Skript {script} nicht gefunden im Ordner {folder}")
-
-# # Hauptfunktion zum Iterieren durch Ordner und Ausführen der Skripte
-# def process_folders(root_folder):
-#     for root, dirs, files in os.walk(root_folder):
-#         if 'terrain' in dirs:
-#             terrain_folder = os.path.join(root, 'terrain')
-#             execute_scripts(terrain_folder)
-
-# # Hauptprogramm
-# if __name__ == "__main__":
-#     root_folder = '/data/scratch/furiawil/Dissertation/OpenFOAM/big_runs'
-#     process_folders(root_folder)
-
 BINARY_HEADER ="80sI"
 BINARY_FACET = "12fH"
 
@@ -239,27 +210,23 @@ def example(DEMfile,maskFile, elevation):
 
 
 if __name__ == '__main__':
-    # Finde die DEM-Datei
     DEMfile_candidates = glob.glob("DEM*.tif")
 
-    # Überprüfe, ob mindestens eine passende Datei gefunden wurde
     if not DEMfile_candidates:
-        print("Keine passende DEM-Datei gefunden.")
+        print("Found no suitable DEM file.")
         sys.exit(1)
 
-    # Wähle die erste gefundene Datei aus
     DEMfile = DEMfile_candidates[0]
     maskFile = "lake.tif"
     
-    # Lies den Parameter "elevation" aus der Datei "elevation"
     try:
         with open("elevation", "r") as file:
             elevation = int(file.read().strip())
     except FileNotFoundError:
-        print("Die Datei 'elevation' wurde nicht gefunden.")
+        print("File 'elevation' not found.")
         sys.exit(1)
     except ValueError:
-        print("Der Inhalt von 'elevation' ist keine gültige Ganzzahl.")
+        print("'elevation' is no integer file.")
         sys.exit(1)
 
     example(DEMfile, maskFile, elevation)
