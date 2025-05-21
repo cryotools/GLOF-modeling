@@ -74,9 +74,9 @@ For questions or collaboration inquiries, please contact:
 
 ---
 
-## ▶️ Getting Started (Example Snippet)
+## ▶️ First steps
 
-Here's a sample snippet for converting a DEM to a format suitable for OpenFOAM meshing:
+Preparing, preparing
 
 ```bash
 gdal_translate -of XYZ input_dem.tif output_dem.xyz
