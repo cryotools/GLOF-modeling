@@ -27,21 +27,35 @@ Instead, it provides a structured overview with **code snippets**, **commands**,
 
 To apply this workflow, the following input data are required:
 
-- A **digital elevation model (DEM)** with sufficient resolution (e.g., ALOS PALSAR at 12.5 m)
+- A **digital elevation model (DEM)** with sufficient resolution (e.g., ALOS PALSAR at 12.5 m)
 - **Vector outlines** of the glacial lakes (e.g., shapefiles) serving as GLOF origins
+- lake bathymetry data (or ice-thickness data for calculating the lake volume)
 
 ---
 
 ## 🛠 Software Requirements
 
-The following software stack has been tested and recommended:
+The following software stack has been tested and is recommended for running the workflow:
 
-| Tool        | Version     | Purpose                         |
-|-------------|-------------|----------------------------------|
-| OpenFOAM    | 2112        | 3D CFD simulation               |
-| ParaView    | 5.11.0      | Visualization and postprocessing |
-| Python      | 3.8         | Pre- and postprocessing scripts |
-| C++         | —           | Required by OpenFOAM solvers    |
+| Software     | Version   | Purpose                                 |
+|--------------|-----------|------------------------------------------|
+| **OpenFOAM** | 2112      | 3D computational fluid dynamics (CFD) simulation |
+| **ParaView** | 5.11.0    | Visualization and postprocessing         |
+| **Python**   | 3.8       | Preprocessing and postprocessing scripts |
+| **C++**      | —         | Required for OpenFOAM solvers            |
+
+> 💡 *The code is written in both Python and C++.*
+
+---
+
+### 💻 System Setup and HPC Access
+
+While small test cases may be run locally, **access to a high-performance computing (HPC) cluster** is highly recommended for full-scale simulations. You can use tools like:
+
+- **PuTTY** – for secure SSH terminal access to remote servers
+- **WinSCP** – for file transfer between your local machine and the cluster
+
+Make sure that OpenFOAM is correctly installed and configured on the HPC system or simulation server.
 
 ---
 
@@ -74,9 +88,26 @@ For questions or collaboration inquiries, please contact:
 
 ---
 
-## ▶️ First steps
+## ▶️ Workflow Overview
 
-Preparing, preparing
+The general workflow consists of the following steps:
 
-```bash
-gdal_translate -of XYZ input_dem.tif output_dem.xyz
+1. **Delineation of glacial lake boundaries**  
+   Identify and digitize the extent of the glacial lake using satellite imagery or field data.
+
+2. **Identification of potential breach path**  
+   Define the most likely breach location across the moraine, based on topography and geomorphological indicators.
+
+3. **Preparation of the digital elevation model (DEM)**  
+   Process and clean the DEM to ensure compatibility with meshing tools.
+
+4. **Conversion of the DEM to STL format**  
+   Generate a surface mesh (STL file) to represent the terrain in OpenFOAM.
+
+5. **OpenFOAM simulation setup**  
+   - Use `blockMesh` and `snappyHexMesh` to generate the computational mesh  
+   - Define the initial water body using `setFields`  
+   - Configure and validate boundary conditions  
+   - Execute the simulation runs
+
+Each of these steps will be accompanied by explanatory notes and representative code snippets throughout this guide.
