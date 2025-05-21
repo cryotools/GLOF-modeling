@@ -53,10 +53,10 @@ Each breach should be integrated into a separate DEM to allow testing of differe
 
 ## Part 3 – DEM Finalization
 
-Both the lake "cavity" and the moraine breach must be incorporated into the original DEM using GIS software. 
+Both the lake basin and the moraine breach must be incorporated into the original DEM using GIS software. 
 This results in a set of DEMs, each representing a specific combination of lake volume and breach geometry.
 
-Once the lake basin has been carved into the DEM, it is useful to:
+Once the lake basin has been merged with the DEM, it is useful to:
 1. Apply a *Fill* algorithm to estimate the maximum water level,
 2. Subtract a **freeboard value** (e.g., 5 m or 10 m) from this level to set the actual lake surface elevation.
 
@@ -67,13 +67,19 @@ This clipped output serves as the simulation domain.
 The raster representing the valley extent (`valley.tif`) must have the **same extent and alignment** as the DEM (`DEM.tif`). This can be ensured by using ArcGIS tools such as:
 
 - **Raster Calculator**:  
-  ```ArcGIS
-  SetNull("valley.tif" < 0, "DEM.tif")
+  ``
+  SetNull("valley.tif" < 0, "DEM.tif")  
+  ``  
 with the following adjustments in the Environment settings:
-- Set *Extent* and *Snap Raster* to the extent of the original DEM
+  - Set *Extent* and *Snap Raster* to the extent of the original DEM
 
+---
 
 ## Part 4 - Creating the STL files
 
-Using the following script (link to the script called stlWriter.py here), 
-two STL files are created from the DEM and valley rasters.
+Using the following terminal command (calling a script called `stlWriter.py`), 
+the STL files are created from the DEM:  
+``
+  python3 stlWriter.py -d land.tif -s valley.tif
+``  
+asdf
