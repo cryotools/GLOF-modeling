@@ -22,4 +22,3 @@ The general workflow consists of the following steps:
    - Execute the simulation runs
 
 Each of these steps will be accompanied by explanatory notes and representative code snippets throughout this guide.
-
