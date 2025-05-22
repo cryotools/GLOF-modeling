@@ -113,3 +113,5 @@ ensuring that both the valley topography and the lake body are correctly integra
 ## Part 5 - OpenFOAM setup and simulation runs
 
 
+
+### Template folder structure
