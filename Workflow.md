@@ -109,3 +109,7 @@ generate a volumetric representation of the lake.
 
 These extruded STL volumes will later be imported into OpenFOAM during the mesh generation process, 
 ensuring that both the valley topography and the lake body are correctly integrated into the simulation domain.
+
+## Part 5 - OpenFOAM setup and simulation runs
+
+
