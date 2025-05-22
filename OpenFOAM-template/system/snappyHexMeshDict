@@ -1,0 +1,294 @@
+/*--------------------------------*- C++ -*----------------------------------*\
+| =========                 |                                                 |
+| \\      /  F ield         | OpenFOAM: The Open Source CFD Toolbox           |
+|  \\    /   O peration     | Version:  v2112                                 |
+|   \\  /    A nd           | Website:                                        |
+|    \\/     M anipulation  |                                                 |
+\*---------------------------------------------------------------------------*/
+FoamFile
+{
+    version     2.0;
+    format      ascii;
+    class       dictionary;
+    object      snappyHexMeshDict;
+}
+// * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * //
+
+castellatedMesh true;
+snap            true;
+addLayers       false;
+
+geometry
+{
+    domain
+    {
+        type distributedTriSurfaceMesh;
+        file "valley_box.stl"; 
+    }
+    valley_stl
+    {
+        type distributedTriSurfaceMesh;
+        file "valley.stl";
+    }
+    lake
+    {
+        type distributedTriSurfaceMesh;
+        file "lake.stl";
+    }
+    dam_box
+    {
+    type searchableBox;
+        min (120963 120470 4400);
+        max (120963.5 120540 4550);
+    }
+};
+
+castellatedMeshControls
+{
+    maxLocalCells           10000000; //1000000 ist Original
+    maxGlobalCells          50000000; //5000000 ist Original
+    minRefinementCells      10;
+    maxLoadUnbalance        0.10;
+    nCellsBetweenLevels     3; // für langsamere Übergänge Zahl erhöhen
+
+    features
+    (
+    );
+
+    refinementSurfaces
+    {
+        domain
+        {
+            level (0 0);
+            regions
+            {
+                walls
+                {
+                  level (0 0);
+                }
+                valley
+                {
+                  level (5 5);
+                }
+            }
+        }
+    }
+
+    resolveFeatureAngle 60; // 60
+
+    refinementRegions 
+    {
+        valley_stl
+        {
+            mode    distance;
+            levels  ((40 5));
+        }
+        lake
+        {
+            mode     distance;
+            levels   ((150 5)); //((300 6)(350 5));
+        }
+        dam_box
+        {
+            mode     distance;
+            levels   ((20 6)); //((300 6)(350 5));
+        }
+    }
+
+    locationInMesh (120970 120470 4480); //a point inside the lake
+    allowFreeStandingZoneFaces true;
+};
+
+snapControls
+{
+    nSmoothPatch 3; 
+    tolerance 4.0; // 4.0
+    nSolveIter 30;  // 30
+    nRelaxIter 5;
+    detectNearSurfaceSnap false;
+    //nFeatureSnapIter 15;
+    implicitFeatureSnap false;
+    explicitFeatureSnap true;
+    multiRegionFeatureSnap false;
+}
+
+
+// Settings for the layer addition.
+addLayersControls
+{
+    // Are the thickness parameters below relative to the undistorted
+    // size of the refined cell outside layer (true) or absolute sizes (false).
+    relativeSizes true;
+
+    //nMedialAxisIter = 10;
+
+    // Per final patch (so not geometry!) the layer information
+    layers
+    {
+        valley 
+        {
+            nSurfaceLayers 3;
+        }
+    }
+
+    // Expansion factor for layer mesh
+    expansionRatio 1.1;
+
+    //- Wanted thickness of final added cell layer. If multiple layers
+    //  is the thickness of the layer furthest away from the wall.
+    //  See relativeSizes parameter.
+    finalLayerThickness 0.1; // if relativeSizes true 
+    //firstLayerThickness 0.002; //if relativeSizes false
+
+    //- Minimum thickness of cell layer. If for any reason layer
+    //  cannot be above minThickness do not add layer.
+    //  Relative to undistorted size of cell outside layer.
+    minThickness 0.1; // if relativeSizes true
+    // minThickness 0.005;  // if relativeSizes false, need to adjust this
+
+    //- If points get not extruded do nGrow layers of connected faces that are
+    //  also not grown. This helps convergence of the layer addition process
+    //  close to features.
+    nGrow 0;
+
+    // Advanced settings
+
+    //- When not to extrude surface. 0 is flat surface, 90 is when two faces
+    //  make straight angle.
+    featureAngle 60; // 60
+
+    // Mulitple faces on the same patch get merged
+    //mergePatchFacesAngle 60;  // ??
+
+    //slipFeatureAngel 90;
+
+    //- Maximum number of snapping relaxation iterations. Should stop
+    //  before upon reaching a correct mesh.
+    nRelaxIter 5; //5
+
+    // Number of smoothing iterations of surface normals
+    nSmoothSurfaceNormals 5; //5;
+
+    // Number of smoothing iterations of interior mesh movement direction
+    nSmoothNormals 10; // 10
+
+    // Stop layer growth on highly warped cells
+    maxFaceThicknessRatio 0.6; // 0.5
+
+    // Reduce layer growth where ratio thickness to medial
+    // distance is large
+    maxThicknessToMedialRatio 0.6; // 0.3
+
+    // Smooth layer thickness over surface patches
+    nSmoothThickness 10;
+
+    // Angle used to pick up medial axis points
+    minMedianAxisAngle 130; // 90
+
+    // Create buffer region for new layer terminations
+    nBufferCellsNoExtrude 0;
+
+    // Overall max number of layer addition iterations
+    nLayerIter 50;
+
+    meshShrinker displacementMotionSolver;
+    solver displacementLaplacian;
+    displacementLaplacianCoeffs
+    {
+        diffusivity     quadratic inverseDistance 1(wall);
+    }
+
+}
+
+
+
+// Generic mesh quality settings. At any undoable phase these determine
+// where to undo.
+meshQualityControls
+{
+    //#include "meshQualityDict"
+    
+    //- Maximum non-orthogonality allowed. Set to 180 to disable.
+    maxNonOrtho 80; // 65;
+
+    //- Max skewness allowed. Set to <0 to disable.
+    maxBoundarySkewness 20; //20
+    maxInternalSkewness 4;  //4
+
+    //- Max concaveness allowed. Is angle (in degrees) below which concavity
+    //  is allowed. 0 is straight face, <0 would be convex face.
+    //  Set to 180 to disable.
+    maxConcave 80; // 80;
+
+    //- Minimum projected area v.s. actual area. Set to -1 to disable.
+    minFlatness 0.5; // 0.5;
+
+    //- Minimum pyramid volume. Is absolute volume of cell pyramid.
+    //  Set to a sensible fraction of the smallest cell volume expected.
+    //  Set to very negative number (e.g. -1E30) to disable.
+    minVol 1e-13;
+
+    //- Minimum face area. Set to <0 to disable.
+    minArea 1e-13;
+
+    //- Minimum face twist. Set to <-1 to disable. dot product of face normal
+    //- and face centre triangles normal
+    //minTwist 0.02;
+    minTwist -1;
+
+    //- minimum normalised cell determinant
+    //- 1 = hex, <= 0 = folded or flattened illegal cell
+    minDeterminant  -1; //0.001;
+
+    //- minFaceWeight (0 -> 0.5)
+    minFaceWeight -1; //0.02;
+
+    //- minVolRatio (0 -> 1)
+    minVolRatio -1; //0.01;
+
+    //must be >0 for Fluent compatibility
+    minTriangleTwist -1;
+
+    //Added for 2.1.x, no clue what should be used here...
+    minTetQuality -1; //1e-30; // -1
+
+    // Advanced
+
+    //- Number of error distribution iterations
+    nSmoothScale 4;
+    //- amount to scale back displacement at error points
+    errorReduction 0.75;
+
+    relaxed
+    {
+        maxNonOrtho 100;
+        maxInternalSkewness 6;  //4
+        minArea 0;
+    }
+
+}
+
+// Advanced
+
+// Flags for optional output
+// 0 : only write final meshes
+// 1 : write intermediate meshes
+// 2 : write volScalarField with cellLevel for postprocessing
+// 4 : write current intersections as .obj files
+//debug 0;
+writeFlags
+(
+    scalarLevels
+    layerSets
+    layerFields     // write volScalarField for layer coverage
+);
+
+
+// Merge tolerance. Is fraction of overall bounding box of initial mesh.
+// Note: the write tolerance needs to be higher than this.
+mergeTolerance 1E-6;
+
+/* projectControls //Holzmann
+{
+} */
+// ************************************************************************* //
