@@ -198,7 +198,7 @@ where each value corresponds to the number of cells along the X, Y, and Z axes.
 OpenFOAM will divide the bounding box by these values to create the base mesh. 
 For GLOF simulations, a base resolution between 1 km and 500 m per cell is often a good starting point. 
 `snappyHexMesh` will then refine this further.
-```
+```cpp
 blocks
 (
     hex (0 1 2 3 4 5 6 7) (240 260 14)  simpleGrading (1 1 1)
