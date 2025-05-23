@@ -114,14 +114,6 @@ ensuring that both the valley topography and the lake body are correctly integra
 
 ## Part 5 – OpenFOAM Setup and Simulation Execution
 
-This section assumes prior familiarity with OpenFOAM. For background on solvers, meshing workflows, and case structure,
-we refer users to the official [OpenFOAM documentation](https://www.openfoam.com/documentation/) and community tutorials.
-
-For the simulation of GLOFs, the `interFoam` solver is used. It models incompressible, isothermal two-phase flows (typically air and water), 
-making it suitable for flood simulations involving free surfaces.
-
-## Part 5 – OpenFOAM Setup and Simulation Execution
-
 This section assumes prior familiarity with OpenFOAM. For background on solver configuration, meshing workflows, and case structure,  
 we recommend consulting the official [OpenFOAM documentation](https://www.openfoam.com/documentation/) and available community tutorials.
 
