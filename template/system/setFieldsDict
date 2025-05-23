@@ -31,7 +31,7 @@ regions
 	(
 		(120958 120370 4550)
 	);
-	includeCut	true;  //das koennte auch auf false gestellt werden
+	includeCut	true;
 	includeInside	true;
 	includeOutside	false;
 	nearDistance	-1;
