@@ -207,3 +207,13 @@ blocks
 (240 260 14) indicates the number of cells in X, Y, and Z directions.
 simpleGrading defines uniform cell size distribution.
 
+Once everything is set, you can generate the background mesh in OpenFOAM by running the following terminal command 
+from your case directory (where the system/ folder is located):
+```bash
+blockMesh
+```
+The generated mesh will be stored in the constant/polyMesh/ folder and can be checked in ParaView or by 
+running OpenFOAM’s internal mesh check:
+```bash
+checkMesh
+```
