@@ -37,12 +37,12 @@ To apply this workflow, the following input data are required:
 
 The following software stack has been tested and is recommended for running the workflow:
 
-| Software     | Version   | Purpose                                 |
-|--------------|-----------|------------------------------------------|
-| **OpenFOAM** | 2112      | 3D computational fluid dynamics (CFD) simulation |
-| **ParaView** | 5.11.0    | Visualization and postprocessing         |
-| **Python**   | 3.8       | Preprocessing and postprocessing scripts |
-| **C++**      | —         | Required for OpenFOAM solvers            |
+| Software     | Version | Purpose                                 |
+|--------------|---------|------------------------------------------|
+| **OpenFOAM** | 2112    | 3D computational fluid dynamics (CFD) simulation |
+| **ParaView** | 5.11.0  | Visualization and postprocessing         |
+| **Python**   | 3.8     | Preprocessing and postprocessing scripts |
+| **C++**      | 11      | Required for OpenFOAM solvers            |
 
 > 💡 *The code is written in both Python and C++.*
 
@@ -50,12 +50,13 @@ The following software stack has been tested and is recommended for running the 
 
 ### 💻 System Setup and HPC Access
 
-While small test cases may be run locally, **access to a high-performance computing (HPC) cluster** is highly recommended for full-scale simulations. You can use tools like:
+While small test cases may be run locally, **access to a high-performance computing (HPC) cluster** is highly recommended for full-scale simulations. 
+When using a Windows setup, the following tools are helpful:
 
-- **PuTTY** – for secure SSH terminal access to remote servers
-- **WinSCP** – for file transfer between your local machine and the cluster
+- **PuTTY** – for secure SSH terminal access to the remote server
+- **WinSCP** – for file transfer between the local machine and the server
 
-Make sure that OpenFOAM is correctly installed and configured on the HPC system or simulation server.
+Make sure that OpenFOAM is correctly installed and configured on the HPC system.
 
 ---
 
