@@ -111,18 +111,16 @@ generate a volumetric representation of the lake.
 These extruded STL volumes will later be imported into OpenFOAM during the mesh generation process, 
 ensuring that both the valley topography and the lake body are correctly integrated into the simulation domain.
 
+---
 
 ## Part 5 – OpenFOAM Setup and Simulation Execution
 
 This section assumes prior familiarity with OpenFOAM. For background on solver configuration, meshing workflows, and case structure,  
 we recommend consulting the official [OpenFOAM documentation](https://www.openfoam.com/documentation/) and available community tutorials.
 
-For the simulation of GLOFs, the `interFoam` solver is used. It simulates incompressible, isothermal two-phase flow (typically air and water),  
-making it suitable for modeling flood waves with a free surface.
+For the simulation of GLOFs, the `interFoam` solver is used. It simulates incompressible, isothermal two-phase flow (typically air and water), making it suitable for modeling flood waves with a free surface.
 
----
-
-### 📁 Recommended Folder Structure (`template/`)
+### 📁 Recommended Folder Structure
 
 A **template case directory** is provided in this repository. It contains a complete and functional folder structure,  
 which you can adapt to your specific simulation scenario.
@@ -140,12 +138,18 @@ template/
 │   ├── fvSchemes             ← Numerical discretization schemes
 │   ├── fvSolution            ← Solver and algorithm settings
 │   ├── blockMeshDict         ← Definition of the background mesh domain
-│   └── snappyHexMeshDict     ← Configuration for STL-based mesh refinement
+│   ├── snappyHexMeshDict     ← Configuration for STL-based mesh refinement
+│   ├── createBafflesDict     ← Defines internal faces to be converted into baffles
+│   ├── createPatchDict       ← Used to define and merge patches after meshing
+│   ├── decomposeParDict      ← Parallelization settings: domain decomposition for multi-core computation
+│   ├── topoSetDict           ← Defines subsets of the mesh for subsequent baffle generation
+│   └── setFieldsDict         ← Defines initial field values for selected regions (e.i., setting the initial water body)
 │
 ├── 0.org/                    ← Initial and boundary conditions (e.g., p_rgh, U, alpha.water)
 │
 ├── terrain/                  ← Folder for input raster files and STL generation scripts
 ├── custom_name.foam          ← Empty file for ParaView to recognize the case
+
 ```
 
 ### 🧱 Mesh Generation
@@ -157,12 +161,12 @@ This is done in the `blockMeshDict` file inside the system/ folder.
 You need to extract the minimum and maximum X, Y, and Z coordinates from your STL valley file 
 to define the bounding box for blockMesh. This can be done in two ways:
 
-In ParaView:
-- Select the STL, go to the Information tab, and note the bounds (min/max for X, Y, Z).
+Select the STL file in ParaView, go to the Information tab, and note the bounds (min/max for X, Y, Z).
 
-With Python using the numpy-stl package:
+With Python using the `numpy-stl` package:
 
 ```python
+import numpy
 from stl import mesh
 mesh = mesh.Mesh.from_file("path/to/domain.stl")
 print("X:", mesh.x.min(), mesh.x.max())
@@ -209,3 +213,6 @@ running OpenFOAM’s internal mesh check:
 ```bash
 checkMesh
 ```
+
+#### 🔷 snappyHexMesh
+
