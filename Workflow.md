@@ -122,7 +122,7 @@ For the simulation of GLOFs, the `interFoam` solver is used. It simulates incomp
 
 ### 📁 Recommended Folder Structure
 
-A **template case directory** is provided in this repository. It contains a complete and functional folder structure,  
+A **template case directory** is provided in this repository. It contains a complete folder structure,  
 which you can adapt to your specific simulation scenario.
 
 ```text
@@ -161,9 +161,9 @@ This is done in the `blockMeshDict` file inside the system/ folder.
 You need to extract the minimum and maximum X, Y, and Z coordinates from your STL valley file 
 to define the bounding box for blockMesh. This can be done in two ways:
 
-Select the STL file in ParaView, go to the Information tab, and note the bounds (min/max for X, Y, Z).
+- Select the STL file in ParaView, go to the Information tab, and note the bounds (min/max for X, Y, Z).
 
-With Python using the `numpy-stl` package:
+- Use the `numpy-stl` package in Python to print the values:
 
 ```python
 import numpy
@@ -175,7 +175,7 @@ print("Z:", mesh.z.min(), mesh.z.max())
 ```
 > ⚠️ Depending on the size of the STL file, this may take a while.  
 
-Once you have the coordinate bounds, insert them into the vertices section of `blockMeshDict` in the following format:
+Once you have the coordinate bounds, insert them into the vertices section of the `blockMeshDict` according to the following example:
 ```cpp
 vertices  
 (
@@ -192,8 +192,7 @@ vertices
 The mesh resolution is defined in the blocks section, 
 where each value corresponds to the number of cells along the X, Y, and Z axes.
 OpenFOAM will divide the bounding box by these values to create the base mesh. 
-For GLOF simulations, a base resolution between 1 km and 500 m per cell is often a good starting point. 
-`snappyHexMesh` will then refine this further.
+
 ```cpp
 blocks
 (
@@ -201,7 +200,9 @@ blocks
 );
 ```
 (240 260 14) indicates the number of cells in X, Y, and Z directions.
-simpleGrading defines uniform cell size distribution.
+simpleGrading defines uniform cell size distribution.  
+For GLOF simulations, a base resolution between 1 km and 500 m per cell is often a good starting point. 
+`snappyHexMesh` will then refine this further.
 
 Once everything is set, you can generate the background mesh in OpenFOAM by running the following terminal command 
 from your case directory (where the system/ folder is located):
@@ -216,3 +217,120 @@ checkMesh
 
 #### 🔷 snappyHexMesh
 
+`snappyHexMesh` fits the initial mesh block to the STL file and increases the resolution 
+in three steps (due to the large size of the domain, 
+we refrained from using the `addLayers` functionality, but feel free to enable this step if it fits your case):
+```cpp
+castellatedMesh true;
+snap            true;
+addLayers       false;
+```
+
+🧱 `castellatedMesh` generates the initial mesh by subdividing the background mesh based on the STL geometry, 
+then cutting cells along the surfaces defined in constant/triSurface/ and 
+refining regions near important features (e.g., the moraine breach or the surroundings of the lake).  
+The outcome resembles the STL shape, but still has a sharp, blocky geometry.
+
+🧲 `snap` snaps the castellated mesh onto the STL surface. It moves mesh points so that they lie on the actual STL geometry and
+improves the geometric accuracy of the surfaces. 
+
+📚 The `addLayers` step can add boundary layers to the mesh, growing outward from selected surfaces. 
+These layers usually have a higher resolution, improve near-wall flow behaviour and can be used to improve 
+the accuracy of the model. However, due to the higher resolution, the compulational time will increase tremendously.
+
+`snappyHexMeshDict` gives you detailed control over each step. First, under `geometry`, you define the desired geometries, 
+either by providing an STL file or by defining an area in the mesh:
+```cpp
+geometry
+{
+    domain
+    {
+        type distributedTriSurfaceMesh;
+        file "valley_box.stl"; 
+    }
+    valley_stl
+    {
+        type distributedTriSurfaceMesh;
+        file "valley.stl";
+    }
+    lake
+    {
+        type distributedTriSurfaceMesh;
+        file "lake.stl";
+    }
+    dam_box
+    {
+    type searchableBox;
+        min (120963 120470 4400);
+        max (120963.5 120540 4550);
+    }
+};
+```
+Then, under `castellatedMeshControls`, you adjust the regions and surfaces for which the resolution 
+should be increased. 
+```cpp
+castellatedMeshControls
+{
+    maxLocalCells           10000000; 
+    maxGlobalCells          50000000; 
+    minRefinementCells      10;
+    maxLoadUnbalance        0.10;
+    nCellsBetweenLevels     3; 
+
+    features
+    (
+    );
+
+    refinementSurfaces
+    {
+        domain
+        {
+            level (0 0);
+            regions
+            {
+                walls
+                {
+                  level (0 0);
+                }
+                valley
+                {
+                  level (5 5);
+                }
+            }
+        }
+    }
+    resolveFeatureAngle 60;
+```
+Each level increases mesh resolution by a factor of 2 per axis.
+For example:
+- Level 0: original cell size 
+- Level 1: 2× more cells per direction
+- Level 2: 4× more cells → cell size = ¼
+- Level 5: 32× more → very fine mesh in that region
+```
+    refinementRegions 
+    {
+        valley_stl
+        {
+            mode    distance;
+            levels  ((40 5));
+        }
+        lake
+        {
+            mode     distance;
+            levels   ((150 5));
+        }
+        dam_box
+        {
+            mode     distance;
+            levels   ((20 6));
+        }
+    }
+
+    locationInMesh (120970 120470 4480);
+    allowFreeStandingZoneFaces true;
+};
+```
+
+With the `addLayersControls`, you can define which surface should receive the additional layers, 
+their initial and final thickness as well as further details.
