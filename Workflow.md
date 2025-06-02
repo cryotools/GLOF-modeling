@@ -106,7 +106,8 @@ which produces a box-shaped mesh with vertical sidewalls that follow the valley'
 
 The lake surface is processed using `code/stlExtrude_lake.py`. 
 This script uses the specified lake surface elevation to fill the lake basin and 
-generate a volumetric representation of the lake.
+generate a volumetric representation of the lake. Therefore, the surface elevation as well as the
+extents of the main raster and the lake raster need to be adjusted accordingly in the script.
 
 These extruded STL volumes will later be imported into OpenFOAM during the mesh generation process, 
 ensuring that both the valley topography and the lake body are correctly integrated into the simulation domain.
@@ -318,7 +319,7 @@ For example:
 
 The `refinementRegions` entry defines volumetric refinement zones around certain STL geometries. 
 These are used to increase mesh resolution not only on surfaces, but also in the surrounding volume, 
-```
+```cpp
     refinementRegions 
     {
         valley_stl
@@ -356,4 +357,36 @@ what is "inside" and what is "outside" the mesh boundaries.
 With the `addLayersControls`, you can define which surface should receive the additional layers, 
 their initial and final thickness as well as further details. However, since it is not used in this approach
 due to the increased computational demands, it is not discussed here further.
+
+### Lake initialization
+
+The `stlWriter_lake.py`-script generated an STL-file representing the lake as a box reaching from 
+0 meters of elevation to the defined lake surface elevation. This `lake_box.stl` needs to be moved to the
+`triSurface`-folder in /constant, where it can be found by the `setFieldsDict`. 
+This functionality uses the following code to initialize cells as "water":
+```cpp
+regions
+(
+    surfaceToCell
+    {
+	name	lake;
+	file	"./constant/triSurface/lake_box.stl";
+	filetype stl;
+	outsidePoints
+	(
+		(120958 120370 4550)
+	);
+	includeCut	true;
+	includeInside	true;
+	includeOutside	false;
+	nearDistance	-1;
+	curvature	-100;
+        fieldValues
+        (
+            volScalarFieldValue alpha.water 1.0
+        );
+    }
+);
+```
+> ⚠️ The `outsidePoints` need to be outside the lake volume, but inside the atmosphere mesh.
 
