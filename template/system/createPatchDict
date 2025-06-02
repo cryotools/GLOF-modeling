@@ -16,20 +16,16 @@ FoamFile
 
 pointSync false;
 
-// Patches to create.
 patches
 (
     {
-        // Name of new patch
         name DamBaffle;
 
-        // Dictionary to construct new patch from
         patchInfo
         {
-            type wall; // patch or wall?
+            type wall;
         }
 
-        // How to construct: either from 'patches' or 'set'
         constructFrom patches;
 
         patches (baffleWall1 baffleWall2);

@@ -239,6 +239,11 @@ improves the geometric accuracy of the surfaces.
 These layers usually have a higher resolution, improve near-wall flow behaviour and can be used to improve 
 the accuracy of the model. However, due to the higher resolution, the compulational time will increase tremendously.
 
+Similarly to `blockMesh`, `snappyHexMesh` is executed by running:
+```bash
+snappyHexMesh
+```
+
 #### 🗂️ snappyHexMeshDict - `geometry`
 `snappyHexMeshDict` gives you detailed control over each step. First, under `geometry`, you define the desired geometries, 
 either by providing an STL file or by defining an area in the mesh. In this case, the domain is provided by the STL box, 
@@ -390,3 +395,96 @@ regions
 ```
 > ⚠️ The `outsidePoints` need to be outside the lake volume, but inside the atmosphere mesh.
 
+Again, like most OpenFOAM commands, it is run from the main directory:
+```bash
+setFields
+```
+
+### Baffle Creation
+
+To model a more realistic dam breach, a two-dimensional baffle can be inserted into the breach channel.
+This baffle represents the gradual incision of the moraine dam, allowing the simulated discharge to increase over time.
+The workflow uses the topoSet, createBaffles, and createPatch utilities to define and create the baffle structure.
+
+#### 🔷 topoSet
+
+Although the final baffle is a 2D structure, the setup requires defining a bounding box in 3D space.
+Start by opening the mesh in ParaView, navigating to the breach channel, and identifying the desired location for the baffle.
+Extract the node coordinates at this location and use them to define the bounding box in the topoSetDict file:
+```cpp
+box (120957 120456 4442) (120959 120545 4530);
+```
+> ⚠️ Tip: Align the baffle with the mesh cell structure to ensure it appears as a smooth, straight 2D obstruction rather than a stepped or jagged feature.
+
+In this example, the baffle is intended to run parallel to the X-axis (rectangular to the east–west breach channel), 
+matching the main direction of the outflow channel.
+Therefore:
+- The X-coordinates are the same for the whole baffle (in this example: 120958), extend this value ±1 meter to define the box.
+- Use the Y-coordinates to set the baffle’s width (recommended: wider than the breach channel).
+- Set the Z-coordinates to define the baffle’s height.
+
+#### 🧩 createBaffles
+
+This step creates the main baffle in the breach channel along with two adjacent sealing structures.
+The main baffle functions as a sluice gate, typically rectangular in shape, making discharge calculations more straightforward.
+The two additional structures seal off any remaining gaps in the breach channel.
+
+In the createBafflesDict, define:
+- Two walls (west and east) as searchableSurface types, which seal the sides of the breach.
+- One cyclic patch (quadruplicateBaffle) that consists of four mirroring surfaces (two walls + two cyclic patches).
+
+This setup ensures a proper closure of the breach channel while allowing the main baffle to open gradually during the simulation.
+
+#### 🛠️ createPatches
+The patches generated with createBaffles are then combined into a unified patch, here named "DamBaffle".
+This patch is then configured in the velocity boundary condition file (0.org/U) as follows:
+```cpp
+DamBaffle
+{ 
+    type            myBaffleVelocity;
+    cyclicPatch     baffle_master;
+    orientation     1;
+    openingTime     2700;
+    maxOpenFractionDelta 0.1;
+    openFraction    0;
+    value           uniform (0 0 0);
+}
+```
+Key parameters:
+- openingTime: Time in seconds when the baffle starts to open.
+- openFraction: The initial opening fraction of the baffle (0 = closed).
+- maxOpenFractionDelta: The maximum allowed increase per timestep.
+
+Once all configurations are set, you can run the following commands from the main case directory:
+```bash
+renumberMesh -overwrite
+topoSet
+createBaffles -overwrite
+createPatches -overwrite
+```
+> ⚠️ Note: `renumberMesh` optimizes the mesh cell order to reduce computational bandwidth and improve simulation performance.
+
+### ▶️ Running the Simulation
+
+Before starting the simulation, make sure to **review your simulation parameters**.
+The `controlDict` file lets you configure:
+- Simulation runtime (start and end times),
+- Time step settings,
+- Writing intervals for saving output.
+
+Once you’re satisfied with these settings and have confirmed that the meshes look correct in ParaView, 
+launch the simulation from the main directory:
+```bash
+interFoam
+```
+
+#### 🔁 Automating Multiple Runs
+If you plan to run multiple simulations in sequence, it can be helpful to use scripts to automate the process.
+We provide two example batch files — Allrun1.bat and Allrun2.bat — that cover the workflow from:
+- Mesh creation (using decomposeDict for parallel processing),
+- Lake initialization,
+- Baffle creation,
+- and simulation execution.
+
+These batch files have to be customized to match your specific server setup and workflow needs, 
+but they provide a good starting point.
