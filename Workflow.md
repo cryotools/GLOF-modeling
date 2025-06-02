@@ -152,8 +152,7 @@ template/
 
 ```
 
-### 🧱 Mesh Generation
-#### 🔷 blockMesh
+### 🧱 Mesh Generation 🔷 blockMesh
 
 The first step is to define a background mesh box that encloses your terrain and lake geometries.
 This is done in the `blockMeshDict` file inside the system/ folder.
@@ -215,7 +214,7 @@ running OpenFOAM’s internal mesh check:
 checkMesh
 ```
 
-#### 🔷 snappyHexMesh
+### 🧱 Mesh Generation 🔷 snappyHexMesh
 
 `snappyHexMesh` fits the initial mesh block to the STL file and increases the resolution 
 in three steps (due to the large size of the domain, 
@@ -225,6 +224,7 @@ castellatedMesh true;
 snap            true;
 addLayers       false;
 ```
+🗂️ The `geometry` section lets you define the necessary inputs or searchable boxes for mesh refinement steps.
 
 🧱 `castellatedMesh` generates the initial mesh by subdividing the background mesh based on the STL geometry, 
 then cutting cells along the surfaces defined in constant/triSurface/ and 
@@ -238,8 +238,14 @@ improves the geometric accuracy of the surfaces.
 These layers usually have a higher resolution, improve near-wall flow behaviour and can be used to improve 
 the accuracy of the model. However, due to the higher resolution, the compulational time will increase tremendously.
 
+#### 🗂️ snappyHexMeshDict - `geometry`
 `snappyHexMeshDict` gives you detailed control over each step. First, under `geometry`, you define the desired geometries, 
-either by providing an STL file or by defining an area in the mesh:
+either by providing an STL file or by defining an area in the mesh. In this case, the domain is provided by the STL box, 
+the valley is represented by the valley STL file, as is the lake by the lake STL.  
+The area around the moraine dam has no related STL file and thus needs to be defined by a searchableBox. 
+The parameters for this can be extracted from ParaView: After an initial run of `snappyHexMesh`, load the mesh into 
+ParaView (as a surface with edges), identify the location of the moraine breach you want to receive a higher resolution and extract the
+edge coordinates by hovering on them with the "Hover Points" functionality activated.
 ```cpp
 geometry
 {
@@ -266,8 +272,9 @@ geometry
     }
 };
 ```
-Then, under `castellatedMeshControls`, you adjust the regions and surfaces for which the resolution 
-should be increased. 
+#### 🧱 snappyHexMeshDict - `castellatedMeshControls`
+Under `castellatedMeshControls`, you adjust the regions and surfaces for which the resolution 
+should be increased.
 ```cpp
 castellatedMeshControls
 {
@@ -301,12 +308,16 @@ castellatedMeshControls
     }
     resolveFeatureAngle 60;
 ```
+`refinementSurfaces` controls how different parts of the STL are refined. 
 Each level increases mesh resolution by a factor of 2 per axis.
 For example:
 - Level 0: original cell size 
 - Level 1: 2× more cells per direction
 - Level 2: 4× more cells → cell size = ¼
 - Level 5: 32× more → very fine mesh in that region
+
+The `refinementRegions` entry defines volumetric refinement zones around certain STL geometries. 
+These are used to increase mesh resolution not only on surfaces, but also in the surrounding volume, 
 ```
     refinementRegions 
     {
@@ -331,6 +342,18 @@ For example:
     allowFreeStandingZoneFaces true;
 };
 ```
+Each entry refers to an object from the geometry section.  
+`mode distance` tells `snappyHexMesh` to refine cells within a certain distance from the geometry surface.  
+In `levels ((distance refinementLevel))`, each entry is a tuple:
+- The first value is the distance from the surface (in meters). 
+- The second value is the refinement level to apply within that range.
 
+`locationInMesh` defines a point inside the mesh domain of the valley box. 
+This is required by `snappyHexMesh` to determine 
+what is "inside" and what is "outside" the mesh boundaries.
+
+#### 🧱 snappyHexMeshDict - `addLayersControls`
 With the `addLayersControls`, you can define which surface should receive the additional layers, 
-their initial and final thickness as well as further details.
+their initial and final thickness as well as further details. However, since it is not used in this approach
+due to the increased computational demands, it is not discussed here further.
+
